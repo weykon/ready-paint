@@ -1,0 +1,18 @@
+[package]
+name = "ready-paint"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/weykon/ready-paint.git"
+keywords = ["wgpu", "winit", "graphics"]
+authors = ["weykon <weykon@qq.com>"]
+description = "A simple ready-paint schema using wgpu and winit."
+readme = "README.md"
+categories = ["graphics", "game-development", "rendering"]
+license = "MIT"
+exclude = [
+    "target",
+]
+
+[dependencies]
+wgpu = "~23.0.1"
+winit = "~0.30.7"
