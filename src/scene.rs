@@ -102,7 +102,6 @@ pub trait Pass<'a> {
         render_pass: &'a mut wgpu::RenderPass<'a>,
     ) -> &'a mut wgpu::RenderPass<'a>;
 }
-
 pub trait Queue {
     fn introduce(scene: &mut Scene);
 }
