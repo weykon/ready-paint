@@ -12,3 +12,6 @@ cargo run --example base
 ```bash
 cargo run --example queue_ready_paint_pass
 ```
+
+## Changelog
+- [CHANGELOG.md](CHANGELOG.md)
