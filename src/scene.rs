@@ -2,16 +2,49 @@ use std::{
     any::{Any, TypeId},
     collections::HashMap,
 };
-
 use crate::gfx::Gfx;
-
 pub type HashTypeId2Data = HashMap<TypeId, Box<dyn Any>>;
+/// Render -> Scene
+///        -> Scene is impl Queue (mean its process in sequence)
+///        -> Queue just inroduce your Scene
+/// Ready And Paint in Scene
+///        -> [[add_ready, add_ready, ..],
 pub trait Ready {
     fn ready(&mut self, data: &mut HashTypeId2Data, gfx: &Gfx);
 }
+/// Paint can handle lots of code
+/// you can use Update or Pass to reduce code in Paint
+/// fn paint will be called at frame render
+pub trait Paint {
+    fn paint(data: &mut HashTypeId2Data, gfx: &Gfx);
+}
+/// running in Paint function {
+///    [update, update, ..]
+///       (may also have)
+///    [{pass}, {pass}, ..]
+/// }
 pub trait Update {
     fn update(data: &mut HashTypeId2Data, gfx: &Gfx);
 }
+/// running in Paint function {
+///    [update, update, ..]
+///       (may also have)
+///    [{pass}, {pass}, ..]
+/// }
+pub trait Pass<'a> {
+    fn pass(
+        data: &mut HashTypeId2Data,
+        render_pass: &'a mut wgpu::RenderPass<'a>,
+    ) -> &'a mut wgpu::RenderPass<'a>;
+}
+
+/// Render -> Scene
+///        -> Scene is impl Queue (mean its process in sequence)
+///        -> Queue just inroduce your Scene
+pub trait Queue {
+    fn introduce(scene: &mut Scene);
+}
+
 pub fn get_res<T: Any + 'static>(data: &HashTypeId2Data) -> &T {
     match data
         .get(&TypeId::of::<T>())
@@ -35,9 +68,6 @@ pub fn get_res_mut<T: Any + 'static>(data: &mut HashTypeId2Data) -> &mut T {
 pub fn return_res<T: Any + 'static>(data: &mut HashMap<TypeId, Box<dyn Any>>, new_data: T) {
     data.insert(TypeId::of::<T>(), Box::new(new_data));
 }
-pub trait Paint {
-    fn paint(data: &mut HashTypeId2Data, gfx: &Gfx);
-}
 
 pub struct Scene {
     readys: Vec<TypeId>,
@@ -48,6 +78,9 @@ pub struct Scene {
     name: String,
 }
 impl Scene {
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
     pub fn new(name: impl Into<String>) -> Self {
         Scene {
             res: HashMap::new(),
@@ -95,13 +128,4 @@ impl Scene {
             }
         }
     }
-}
-pub trait Pass<'a> {
-    fn pass(
-        data: &mut HashTypeId2Data,
-        render_pass: &'a mut wgpu::RenderPass<'a>,
-    ) -> &'a mut wgpu::RenderPass<'a>;
-}
-pub trait Queue {
-    fn introduce(scene: &mut Scene);
 }
