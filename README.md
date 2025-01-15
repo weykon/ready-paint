@@ -20,7 +20,7 @@ cargo run --example base
 cargo run --example queue_ready_paint_pass
 ```
 
-- [example] : [**Nice View**](examples/nice_view.rs)
+- [example] : [**Nice View**](examples/nice_view/mod.rs)
 
 ```bash
 cargo run --example nice_view
