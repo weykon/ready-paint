@@ -1,6 +1,5 @@
 use std::sync::Arc;
-use wgpu::RequestAdapterOptions;
-use winit::window::Window;
+use wgpu::{RequestAdapterOptions, SurfaceTarget};
 pub struct Gfx {
     pub adapter: wgpu::Adapter,
     pub device: wgpu::Device,
@@ -14,7 +13,7 @@ pub struct Gfx {
     pub delta_time: f32,
 }
 impl Gfx {
-    pub async fn new(window: Arc<Window>) -> Self {
+    pub async fn new(window: impl Into<SurfaceTarget<'static>>) -> Self {
         let instance = wgpu::Instance::default();
 
         let adapter = instance
@@ -27,7 +26,7 @@ impl Gfx {
             .await
             .unwrap();
 
-        let surface = instance.create_surface(window.clone()).unwrap();
+        let surface = instance.create_surface(window).unwrap();
 
         Gfx {
             device,
@@ -41,6 +40,14 @@ impl Gfx {
             fps_history: Vec::new(),
             delta_time: 0.0,
         }
+    }
+    pub fn with_fps(mut self, fps: f32) -> Self {
+        self.limit_fps = LimitFPS::Limit(fps);
+        self
+    }
+    pub fn with_no_fps_limit(mut self) -> Self {
+        self.limit_fps = LimitFPS::NoLimit;
+        self
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {

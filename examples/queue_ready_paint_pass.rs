@@ -245,10 +245,10 @@ impl ApplicationHandler for App {
                         gfx.resize(width, height);
                         if self.first_resize {
                             self.first_resize = false;
+                            self.render.ready();
                             return;
                         }
                         println!("resize ready");
-                        self.render.ready();
                         self.window.as_ref().unwrap().request_redraw();
                     }
                     _ => {

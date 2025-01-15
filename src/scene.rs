@@ -45,6 +45,7 @@ pub trait Queue {
     fn introduce(scene: &mut Scene);
 }
 
+/// get res from hashmap by type into box data
 pub fn get_res<T: Any + 'static>(data: &HashTypeId2Data) -> &T {
     match data
         .get(&TypeId::of::<T>())
@@ -60,11 +61,14 @@ pub fn get_res<T: Any + 'static>(data: &HashTypeId2Data) -> &T {
         }
     }
 }
+/// get ref mut from hashmap by type into box data
 pub fn get_res_mut<T: Any + 'static>(data: &mut HashTypeId2Data) -> &mut T {
     data.get_mut(&TypeId::of::<T>())
         .and_then(|data| data.downcast_mut::<T>())
         .unwrap()
 }
+
+/// create a new box data of type in hashmap (directly cover)
 pub fn return_res<T: Any + 'static>(data: &mut HashMap<TypeId, Box<dyn Any>>, new_data: T) {
     data.insert(TypeId::of::<T>(), Box::new(new_data));
 }
