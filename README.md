@@ -26,6 +26,17 @@ cargo run --example queue_ready_paint_pass
 cargo run --example nice_view
 ```
 
+- [example] : [**Refs Muts**](examples/refs_muts.rs)
+
+Advance usage of the library.
+
+In more complex logic processing, you can use this function when you need to use both immutable and mutable references in the same scope
+
+```bash
+cargo run --example refs_muts
+```
+
+
 <!-- ## TODO
 - [TODO.md](TODO.md) -->
 

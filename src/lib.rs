@@ -1,5 +1,6 @@
 pub mod scene;
 pub mod gfx;
+pub mod multi;
 use crate::gfx::Gfx;
 use crate::scene::{
      Queue, Scene,

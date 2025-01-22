@@ -1,8 +1,8 @@
+use crate::gfx::Gfx;
 use std::{
     any::{Any, TypeId},
     collections::HashMap,
 };
-use crate::gfx::Gfx;
 pub type HashTypeId2Data = HashMap<TypeId, Box<dyn Any>>;
 /// Render -> Scene
 ///        -> Scene is impl Queue (mean its process in sequence)
@@ -47,25 +47,50 @@ pub trait Queue {
 
 /// get res from hashmap by type into box data
 pub fn get_res<T: Any + 'static>(data: &HashTypeId2Data) -> &T {
-    match data
-        .get(&TypeId::of::<T>())
+    data.get(&TypeId::of::<T>())
         .and_then(|data| data.downcast_ref::<T>())
-    {
-        Some(v) => v,
-        None => {
-            println!(
-                "Failed to get resource of type: {}",
-                std::any::type_name::<T>()
-            );
-            panic!("Resource not found");
-        }
-    }
+        .expect(&format!(
+            "Failed to get resource of type: {}",
+            std::any::type_name::<T>()
+        ))
 }
 /// get ref mut from hashmap by type into box data
 pub fn get_res_mut<T: Any + 'static>(data: &mut HashTypeId2Data) -> &mut T {
     data.get_mut(&TypeId::of::<T>())
         .and_then(|data| data.downcast_mut::<T>())
-        .unwrap()
+        .expect(&format!(
+            "Failed to get mutable resource of type: {}",
+            std::any::type_name::<T>()
+        ))
+}
+
+/// get ref and mut from hashmap by type into box data
+pub fn get_ref_and_mut<Ref: Any + 'static, Mut: Any + 'static>(
+    data: &mut HashTypeId2Data,
+) -> (&Ref, &mut Mut) {
+    assert_ne!(
+        TypeId::of::<Ref>(),
+        TypeId::of::<Mut>(),
+        "Ref and Mut should not be the same type"
+    );
+    unsafe {
+        let data_ptr = data as *mut HashTypeId2Data;
+        let t1 = (&*data_ptr)
+            .get(&TypeId::of::<Ref>())
+            .and_then(|r| r.downcast_ref::<Ref>())
+            .expect(&format!(
+                "Failed to get resource of type: {}",
+                std::any::type_name::<Ref>()
+            ));
+        let t2 = (&mut *data_ptr)
+            .get_mut(&TypeId::of::<Mut>())
+            .and_then(|d| d.downcast_mut::<Mut>())
+            .expect(&format!(
+                "Failed to get mutable resource of type: {}",
+                std::any::type_name::<Mut>()
+            ));
+        (t1, t2)
+    }
 }
 
 /// create a new box data of type in hashmap (directly cover)
