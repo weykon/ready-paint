@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use wgpu::{RequestAdapterOptions, SurfaceTarget};
+
 pub struct Gfx {
     pub adapter: wgpu::Adapter,
     pub device: wgpu::Device,
@@ -40,6 +41,9 @@ impl Gfx {
             fps_history: Vec::new(),
             delta_time: 0.0,
         }
+    }
+    pub fn set_zero_dt (&mut self) {
+        self.delta_time = 0.;
     }
     pub fn with_fps(mut self, fps: f32) -> Self {
         self.limit_fps = LimitFPS::Limit(fps);

@@ -36,9 +36,11 @@ impl<T: 'static + Ready> RefOrMut for Ref<T> {
 
     fn process<'a>(data: &'a mut HashTypeId2Data) -> Self::Output<'a> {
         data.get(&TypeId::of::<T>())
-            .unwrap()
-            .downcast_ref()
-            .unwrap()
+            .and_then(|r| r.downcast_ref::<T>())
+            .expect(&format!(
+                "Failed to get resource of type: {}",
+                std::any::type_name::<T>()
+            ))
     }
 }
 
@@ -50,9 +52,11 @@ impl<T: 'static + Ready> RefOrMut for Mut<T> {
 
     fn process<'a>(data: &'a mut HashTypeId2Data) -> Self::Output<'a> {
         data.get_mut(&TypeId::of::<T>())
-            .unwrap()
-            .downcast_mut()
-            .unwrap()
+            .and_then(|m| m.downcast_mut::<T>())
+            .expect(&format!(
+                "Failed to get mutable resource of type: {}",
+                std::any::type_name::<T>()
+            ))
     }
 }
 pub trait TurpleAccess {

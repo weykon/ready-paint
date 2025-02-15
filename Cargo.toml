@@ -1,6 +1,6 @@
 [package]
 name = "ready-paint"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 repository = "https://github.com/weykon/ready-paint.git"
 keywords = ["wgpu", "winit", "graphics"]
@@ -26,6 +26,9 @@ path = "examples/queue_ready_paint_pass.rs"
 [[example]]
 name = "nice_view"
 path = "examples/nice_view/mod.rs"
+[[example]]
+name = "refs_muts"
+path = "examples/refs_muts.rs"
 
 [dev_dependencies]
 spin_sleep = "1.3.0"
