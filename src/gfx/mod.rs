@@ -1,13 +1,13 @@
+use crate::time::{now, TimeStamp};
 use std::sync::Arc;
 use wgpu::{RequestAdapterOptions, SurfaceTarget};
-
 pub struct Gfx {
     pub adapter: wgpu::Adapter,
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
     pub surface: wgpu::Surface<'static>,
     pub surface_config: Option<wgpu::SurfaceConfiguration>,
-    pub last_update: std::time::Instant,
+    pub last_update: TimeStamp,
     pub time: Arc<std::sync::Mutex<f32>>,
     pub limit_fps: LimitFPS,
     pub fps_history: Vec<f32>,
@@ -15,6 +15,19 @@ pub struct Gfx {
 }
 impl Gfx {
     pub async fn new(window: impl Into<SurfaceTarget<'static>>) -> Self {
+        #[cfg(target_arch = "wasm32")]
+        {
+            console_error_panic_hook::set_once();
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        let instance = {
+            wgpu::Instance::new(wgpu::InstanceDescriptor {
+                backends: Backends::BROWSER_WEBGPU,
+                ..Default::default()
+            })
+        };
+        #[cfg(not(target_arch = "wasm32"))]
         let instance = wgpu::Instance::default();
 
         let adapter = instance
@@ -35,14 +48,14 @@ impl Gfx {
             surface,
             adapter,
             surface_config: None,
-            last_update: std::time::Instant::now(),
+            last_update: now(),
             time: Arc::new(std::sync::Mutex::new(0.0)),
             limit_fps: LimitFPS::default(),
             fps_history: Vec::new(),
             delta_time: 0.0,
         }
     }
-    pub fn set_zero_dt (&mut self) {
+    pub fn set_zero_dt(&mut self) {
         self.delta_time = 0.;
     }
     pub fn with_fps(mut self, fps: f32) -> Self {

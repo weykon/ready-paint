@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use ready_paint::*;
+use std::sync::Arc;
 use winit::{application::ApplicationHandler, dpi::PhysicalSize, window::Window};
 
 fn main() {
@@ -56,8 +56,7 @@ impl ApplicationHandler for App {
         if let RenderEntry::NotReady = self.render.entry {
             let window = event_loop
                 .create_window(
-                    winit::window::Window::default_attributes()
-                        .with_title("base".to_string()),
+                    winit::window::Window::default_attributes().with_title("base".to_string()),
                 )
                 .unwrap();
 

@@ -99,26 +99,28 @@ pub fn return_res<T: Any + 'static>(data: &mut HashMap<TypeId, Box<dyn Any>>, ne
 }
 
 pub struct Scene {
+    name: String,
+    res: HashMap<TypeId, Box<dyn Any>>,
     readys: Vec<TypeId>,
     paints: Vec<TypeId>,
     readys_hashmap: HashMap<TypeId, Box<dyn FnMut(&mut HashMap<TypeId, Box<dyn Any>>, &Gfx)>>,
-    paints_hashmap: HashMap<TypeId, Box<dyn FnMut(&mut HashMap<TypeId, Box<dyn Any>>, &Gfx)>>,
-    res: HashMap<TypeId, Box<dyn Any>>,
-    name: String,
+    paints_hashmap: HashMap<TypeId, Box<dyn Fn(&mut HashMap<TypeId, Box<dyn Any>>, &Gfx)>>,
 }
+
 impl Scene {
-    pub fn get_name(&self) -> &str {
-        &self.name
-    }
-    pub fn new(name: impl Into<String>) -> Self {
+    pub fn new(name: String) -> Self {
         Scene {
+            name,
             res: HashMap::new(),
-            paints_hashmap: HashMap::new(),
             readys: Vec::new(),
-            name: name.into(),
             paints: Vec::new(),
             readys_hashmap: HashMap::new(),
+            paints_hashmap: HashMap::new(),
         }
+    }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
     }
 
     pub fn add_ready<T: Ready + Default + 'static>(&mut self, mut ready_res: T) -> &mut Self {
