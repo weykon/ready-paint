@@ -1,8 +1,8 @@
-use std::f32::consts;
 use ready_paint::{
     gfx::Gfx,
     scene::{get_res, get_res_mut, return_res, HashTypeId2Data, Pass, Ready, Update},
 };
+use std::f32::consts;
 use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
     BindGroupLayoutEntry, ShaderStages,
@@ -106,8 +106,8 @@ pub fn generate_matrix(aspect_ratio: f32) -> glam::Mat4 {
 impl<'a> Pass<'a> for World {
     fn pass(
         data: &mut HashTypeId2Data,
-        render_pass: &'a mut wgpu::RenderPass<'a>,
-    ) -> &'a mut wgpu::RenderPass<'a> {
+        mut render_pass: wgpu::RenderPass<'a>,
+    ) -> wgpu::RenderPass<'a> {
         let world = get_res::<World>(data);
         let uniforms_bind_group = world.uniforms_bind_group.as_ref().unwrap();
         render_pass.set_bind_group(0, uniforms_bind_group, &[]);

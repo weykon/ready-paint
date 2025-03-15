@@ -1,6 +1,6 @@
 use gfx::LimitFPS;
 use glam::Vec2;
-use ready_paint::*;
+use ready_paint::{time::now, *};
 use scene::{get_res, return_res, HashTypeId2Data, Paint, Pass, Queue, Ready, Scene};
 use std::sync::Arc;
 use wgpu::util::DeviceExt;
@@ -110,8 +110,8 @@ struct PaintScreen;
 impl<'a> Pass<'a> for PaintScreen {
     fn pass(
         data: &mut HashTypeId2Data,
-        render_pass: &'a mut wgpu::RenderPass<'a>,
-    ) -> &'a mut wgpu::RenderPass<'a> {
+        mut render_pass: wgpu::RenderPass<'a>,
+    ) -> wgpu::RenderPass<'a> {
         let screen = get_res::<RectScene>(data);
         let index_buffer = screen.index_buffer.as_ref().unwrap();
         let render_pipeline = screen.render_pipeline.as_ref().unwrap();
@@ -155,7 +155,7 @@ impl Paint for PaintScreen {
                 timestamp_writes: None,
                 occlusion_query_set: None,
             });
-            let _ = PaintScreen::pass(data, &mut render_pass);
+            let _ = PaintScreen::pass(data, render_pass);
         }
         gfx.queue.submit(std::iter::once(encoder.finish()));
         frame.present();
@@ -214,20 +214,46 @@ impl ApplicationHandler for App {
     }
     fn about_to_wait(&mut self, _: &winit::event_loop::ActiveEventLoop) {
         if let RenderEntry::Ready(ref mut gfx) = self.render.entry {
-            let now = std::time::Instant::now();
-            let delta_time = now - gfx.last_update;
-            let time = *gfx.time.lock().unwrap() + delta_time.as_secs_f32();
-            if let LimitFPS::Limit(fps) = gfx.limit_fps {
-                let frame_duration = std::time::Duration::from_secs_f32(1.0 / fps as f32);
-                if delta_time < frame_duration {
-                    spin_sleep::sleep(frame_duration - delta_time);
+            let _now = now();
+
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let delta_time = _now - gfx.last_update;
+
+                let time = *gfx.time.lock().unwrap() + delta_time.as_secs_f32();
+                if let LimitFPS::Limit(fps) = gfx.limit_fps {
+                    let frame_duration = std::time::Duration::from_secs_f32(1.0 / fps as f32);
+                    if delta_time < frame_duration {
+                        spin_sleep::sleep(frame_duration - delta_time);
+                    }
+                }
+                gfx.last_update = now();
+                *gfx.time.lock().unwrap() = time;
+                let real_delta = gfx.last_update - _now;
+                gfx.delta_time = real_delta.as_secs_f32();
+                self.window.as_ref().unwrap().request_redraw();
+            }
+            #[cfg(target_arch = "wasm32")]
+            {
+                let delta_time = _now - gfx.last_update;
+                let time = *gfx.time.lock().unwrap() + delta_time as f32;
+                if let LimitFPS::Limit(fps) = gfx.limit_fps {
+                    let frame_duration = std::time::Duration::from_secs_f32(1.0 / fps as f32);
+                    if delta_time < frame_duration.as_secs_f32() {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        spin_sleep::sleep(frame_duration - delta_time);
+                        #[cfg(target_arch = "wasm32")]
+                        wasm_bindgen_futures::spawn_local(async move {
+                            wasm_timer::Delay::new(frame_duration).await.unwrap();
+                        });
+                    }
+                    gfx.last_update = now();
+                    *gfx.time.lock().unwrap() = time;
+                    let real_delta = gfx.last_update - _now;
+                    gfx.delta_time = real_delta;
+                    self.window.as_ref().unwrap().request_redraw();
                 }
             }
-            gfx.last_update = std::time::Instant::now();
-            *gfx.time.lock().unwrap() = time;
-            let real_delta = gfx.last_update - now;
-            gfx.delta_time = real_delta.as_secs_f32();
-            self.window.as_ref().unwrap().request_redraw();
         }
     }
     fn window_event(

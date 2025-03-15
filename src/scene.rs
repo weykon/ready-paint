@@ -32,10 +32,7 @@ pub trait Update {
 ///    [{pass}, {pass}, ..]
 /// }
 pub trait Pass<'a> {
-    fn pass(
-        data: &mut HashTypeId2Data,
-        render_pass: &'a mut wgpu::RenderPass<'a>,
-    ) -> &'a mut wgpu::RenderPass<'a>;
+    fn pass(data: &mut HashTypeId2Data, render_pass: wgpu::RenderPass<'a>) -> wgpu::RenderPass<'a>;
 }
 
 /// Render -> Scene

@@ -1,7 +1,7 @@
+use crate::world::World;
 use glam::Mat4;
 use ready_paint::scene::{get_res, get_res_mut, return_res, HashTypeId2Data, Pass, Ready, Update};
 use wgpu::util::DeviceExt;
-use crate::world::World;
 
 #[derive(Default)]
 pub struct Tetrahedron {
@@ -103,8 +103,8 @@ impl Ready for Tetrahedron {
 impl<'a> Pass<'a> for Tetrahedron {
     fn pass(
         data: &mut HashTypeId2Data,
-        render_pass: &'a mut wgpu::RenderPass<'a>,
-    ) -> &'a mut wgpu::RenderPass<'a> {
+        mut render_pass: wgpu::RenderPass<'a>,
+    ) -> wgpu::RenderPass<'a> {
         let tetra = get_res::<Tetrahedron>(data);
         render_pass.set_pipeline(tetra.pipeline.as_ref().unwrap());
         render_pass.set_vertex_buffer(0, tetra.object_buffer.as_ref().unwrap().slice(..));

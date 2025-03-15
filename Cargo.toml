@@ -1,6 +1,6 @@
 [package]
 name = "ready-paint"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 repository = "https://github.com/weykon/ready-paint.git"
 keywords = ["wgpu", "winit", "graphics"]
@@ -12,7 +12,7 @@ license = "MIT"
 exclude = ["target", "assets"]
 
 [dependencies]
-wgpu = ">=23, <25"
+wgpu = "24.0.1"
 
 [[example]]
 name = "base"
@@ -33,7 +33,10 @@ bytemuck = { version = "1.21.0", features = ["derive"] }
 pollster = "0.4.0"
 glam = "0.29.2"
 winit = "~0.30.7"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1"
 web-sys = { version = "0.3.77", features = ["Window", "Performance"] }
+wasm-timer = "0.2"

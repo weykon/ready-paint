@@ -1,8 +1,5 @@
-
-
-
-use ready_paint::scene::{Paint, Pass, Update};
 use crate::{object::Tetrahedron, world::World};
+use ready_paint::scene::{Paint, Pass, Update};
 pub struct PaintScene;
 
 impl Paint for PaintScene {
@@ -38,8 +35,8 @@ impl Paint for PaintScene {
                 timestamp_writes: None,
                 occlusion_query_set: None,
             });
-            let mut rpass = World::pass(data, &mut rpass);
-            let _ = Tetrahedron::pass(data, &mut rpass);
+            let mut rpass = World::pass(data, rpass);
+            let _ = Tetrahedron::pass(data, rpass);
         }
         gfx.queue.submit(Some(encoder.finish()));
         frame.present();

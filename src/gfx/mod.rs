@@ -22,7 +22,7 @@ impl Gfx {
 
         #[cfg(target_arch = "wasm32")]
         let instance = {
-            wgpu::Instance::new(wgpu::InstanceDescriptor {
+            wgpu::Instance::new(&wgpu::InstanceDescriptor {
                 backends: Backends::BROWSER_WEBGPU,
                 ..Default::default()
             })
