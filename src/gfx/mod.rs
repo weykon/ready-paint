@@ -1,6 +1,6 @@
 use crate::time::{now, TimeStamp};
 use std::sync::Arc;
-use wgpu::{RequestAdapterOptions, SurfaceTarget};
+use wgpu::{Backends, RequestAdapterOptions, SurfaceTarget};
 pub struct Gfx {
     pub adapter: wgpu::Adapter,
     pub device: wgpu::Device,
