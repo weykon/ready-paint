@@ -57,3 +57,7 @@ impl Render {
         self
     }
 }
+
+pub mod prelude {
+    pub use crate::scene::{HashTypeId2Data, Paint, Queue, Ready, Scene};
+}
