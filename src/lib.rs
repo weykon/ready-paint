@@ -15,7 +15,7 @@ pub enum RenderEntry {
 #[derive(Default)]
 pub struct Render {
     pub entry: RenderEntry,
-    pub scenes: Vec<Scene>,
+    pub scenes: Vec<Scene<Gfx>>,
 }
 
 impl Render {
@@ -49,11 +49,17 @@ impl Render {
         }
     }
 
-    pub fn add_scene<T: Queue>(&mut self, name: impl Into<String> + Clone) -> &mut Self {
+    pub fn add_scene<T: Queue<G = Gfx>>(&mut self, name: impl Into<String> + Clone) -> &mut Self {
         println!("add_scene: {}", name.clone().into());
-        let mut s = Scene::new(name.into());
+        let mut s: Scene<<T as Queue>::G> = Scene::new(name.into());
         T::introduce(&mut s);
         self.scenes.push(s);
         self
     }
+}
+
+pub mod prelude { 
+    pub use crate::gfx::Gfx;
+    pub use crate::multi::{Mut, Ref};
+    pub use crate::scene::{DetectGraphics, HashTypeId2Data, Queue, Ready, Scene};
 }

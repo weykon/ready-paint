@@ -9,22 +9,23 @@ pub type HashTypeId2Data = HashMap<TypeId, Box<dyn Any>>;
 ///        -> Queue just inroduce your Scene
 /// Ready And Paint in Scene
 ///        -> [[add_ready, add_ready, ..],
-pub trait Ready {
-    fn ready(&mut self, data: &mut HashTypeId2Data, gfx: &Gfx);
+pub trait Ready<G = Gfx> {
+    type Graphics: 'static;
+    fn ready(&mut self, data: &mut HashTypeId2Data, gfx: &G);
 }
 /// Paint can handle lots of code
 /// you can use Update or Pass to reduce code in Paint
 /// fn paint will be called at frame render
-pub trait Paint {
-    fn paint(data: &mut HashTypeId2Data, gfx: &Gfx);
+pub trait Paint<G> {
+    fn paint(data: &mut HashTypeId2Data, gfx: &G);
 }
 /// running in Paint function {
 ///    [update, update, ..]
 ///       (may also have)
 ///    [{pass}, {pass}, ..]
 /// }
-pub trait Update {
-    fn update(data: &mut HashTypeId2Data, gfx: &Gfx);
+pub trait Update<G> {
+    fn update(data: &mut HashTypeId2Data, gfx: &G);
 }
 /// running in Paint function {
 ///    [update, update, ..]
@@ -39,7 +40,8 @@ pub trait Pass<'a> {
 ///        -> Scene is impl Queue (mean its process in sequence)
 ///        -> Queue just inroduce your Scene
 pub trait Queue {
-    fn introduce(scene: &mut Scene);
+    type G;
+    fn introduce(scene: &mut Scene<Self::G>);
 }
 
 /// get res from hashmap by type into box data
@@ -95,16 +97,16 @@ pub fn return_res<T: Any + 'static>(data: &mut HashMap<TypeId, Box<dyn Any>>, ne
     data.insert(TypeId::of::<T>(), Box::new(new_data));
 }
 
-pub struct Scene {
+pub struct Scene<G> {
     name: String,
     res: HashMap<TypeId, Box<dyn Any>>,
     readys: Vec<TypeId>,
     paints: Vec<TypeId>,
-    readys_hashmap: HashMap<TypeId, Box<dyn FnMut(&mut HashMap<TypeId, Box<dyn Any>>, &Gfx)>>,
-    paints_hashmap: HashMap<TypeId, Box<dyn Fn(&mut HashMap<TypeId, Box<dyn Any>>, &Gfx)>>,
+    readys_hashmap: HashMap<TypeId, Box<dyn FnMut(&mut HashMap<TypeId, Box<dyn Any>>, &G)>>,
+    paints_hashmap: HashMap<TypeId, Box<dyn Fn(&mut HashMap<TypeId, Box<dyn Any>>, &G)>>,
 }
 
-impl Scene {
+impl<G: 'static> Scene<G> {
     pub fn new(name: String) -> Self {
         Scene {
             name,
@@ -120,7 +122,7 @@ impl Scene {
         &self.name
     }
 
-    pub fn add_ready<T: Ready + Default + 'static>(&mut self, mut ready_res: T) -> &mut Self {
+    pub fn add_ready<T: Ready<G> + Default + 'static>(&mut self, mut ready_res: T) -> &mut Self {
         let type_id = TypeId::of::<T>();
         self.readys.push(type_id);
         self.res.insert(type_id, Box::new(T::default()));
@@ -134,13 +136,13 @@ impl Scene {
         self
     }
 
-    pub fn add_paint<T: Paint + 'static>(&mut self) {
+    pub fn add_paint<T: Paint<G> + 'static>(&mut self) {
         let type_id = TypeId::of::<T>();
         self.paints.push(type_id);
         self.paints_hashmap.insert(type_id, Box::new(T::paint));
     }
 
-    pub fn ready(&mut self, gfx: &Gfx) {
+    pub fn ready(&mut self, gfx: &G) {
         println!("<Scene>::ready");
         for ready_type_id in self.readys.iter() {
             if let Some(ready_fn) = self.readys_hashmap.get_mut(ready_type_id) {
@@ -149,11 +151,21 @@ impl Scene {
         }
     }
 
-    pub fn paint(&mut self, gfx: &Gfx) {
+    pub fn paint(&mut self, gfx: &G) {
         for paint_type_id in self.paints.iter() {
             if let Some(paint_fn) = self.paints_hashmap.get_mut(paint_type_id) {
                 paint_fn(&mut self.res, gfx);
             }
         }
     }
+}
+
+pub trait DetectGraphics {
+    type Graphics: 'static;
+}
+impl<T> DetectGraphics for T
+where
+    T: Ready + ?Sized,
+{
+    type Graphics = <T as Ready>::Graphics;
 }

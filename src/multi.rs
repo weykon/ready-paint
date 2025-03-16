@@ -1,6 +1,6 @@
 use std::{any::TypeId, marker::PhantomData};
 
-use crate::scene::{HashTypeId2Data, Ready};
+use crate::scene::{DetectGraphics, HashTypeId2Data, Ready};
 pub trait InRefOrMut {
     type AccessMode;
     type Output;
@@ -26,13 +26,16 @@ pub trait RefOrMut {
     type Output<'a>: 'a
     where
         Self::Target: 'a;
+    type Graphics: 'static;
     fn process<'a>(data: &'a mut HashTypeId2Data) -> Self::Output<'a>;
 }
-pub struct Ref<T>(PhantomData<T>);
-impl<T: 'static + Ready> RefOrMut for Ref<T> {
+
+pub struct Ref<T: DetectGraphics>(PhantomData<T>);
+impl<T: 'static + DetectGraphics> RefOrMut for Ref<T> {
     type Target = T;
     type Mode = Read;
     type Output<'a> = &'a T;
+    type Graphics = T::Graphics;
 
     fn process<'a>(data: &'a mut HashTypeId2Data) -> Self::Output<'a> {
         data.get(&TypeId::of::<T>())
@@ -44,11 +47,12 @@ impl<T: 'static + Ready> RefOrMut for Ref<T> {
     }
 }
 
-pub struct Mut<T>(PhantomData<T>);
-impl<T: 'static + Ready> RefOrMut for Mut<T> {
+pub struct Mut<T: DetectGraphics>(PhantomData<T>);
+impl<T: 'static + DetectGraphics> RefOrMut for Mut<T> {
     type Target = T;
     type Mode = Write;
     type Output<'a> = &'a mut T;
+    type Graphics = T::Graphics;
 
     fn process<'a>(data: &'a mut HashTypeId2Data) -> Self::Output<'a> {
         data.get_mut(&TypeId::of::<T>())
@@ -153,10 +157,12 @@ mod tests {
     struct Data2 {
         val: i32,
     }
-    impl Ready for Data1 {
+    impl Ready<Gfx> for Data1 {
+        type Graphics = Gfx;
         fn ready(&mut self, _: &mut HashTypeId2Data, _: &Gfx) {}
     }
-    impl Ready for Data2 {
+    impl Ready<Gfx> for Data2 {
+        type Graphics = Gfx;
         fn ready(&mut self, _: &mut HashTypeId2Data, _: &Gfx) {}
     }
     #[test]
