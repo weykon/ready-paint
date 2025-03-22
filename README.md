@@ -6,7 +6,7 @@ Chinese: 这个库的代码和设计并非是最优的，只是一个简单的�
 
 English: The code and design of this library is not the best, it is just a simple abstract model, which is convenient for understanding and writing coding habits from the first element to the implementation.
 
-![crate.io/ready-paint](https://img.shields.io/crates/d/ready-paint?link=https%3A%2F%2Fcrates.io%2Fcrates%2Fready-paint)
+[![crate.io/ready-paint](https://img.shields.io/crates/d/ready-paint)](https://crates.io/crates/ready-paint)
 
 ## How to use it
 
